@@ -107,6 +107,19 @@ export default {
               path: '/ownerList'
             }
           ]
+        },
+        {
+          id: '4',
+          menuName: '分类管理',
+          icon: 'el-icon-s-finance',
+          children: [
+            {
+              id: '4-1',
+              menuName: '分类列表',
+              icon: 'el-icon-s-grid',
+              path: '/categoryList'
+            }
+          ]
         }
       ],
     }

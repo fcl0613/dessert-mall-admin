@@ -7,6 +7,7 @@ import dashbord from '@/views/dashboard'
 import user from '@/views/user'
 import store from '@/views/store'
 import owner from '@/views/owner'
+import category from '@/views/category'
 
 
 Vue.use(VueRouter)
@@ -41,6 +42,10 @@ const router = new VueRouter({
         {
           path: '/ownerList',
           component: owner
+        },
+        {
+          path: '/categoryList',
+          component: category
         }
       ]
     }
