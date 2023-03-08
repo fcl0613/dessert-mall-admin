@@ -120,6 +120,19 @@ export default {
               path: '/categoryList'
             }
           ]
+        },
+        {
+          id: '5',
+          menuName: '商品管理',
+          icon: 'el-icon-s-shop',
+          children: [
+            {
+              id: '5-1',
+              menuName: '默认商品',
+              icon: 'el-icon-sell',
+              path: '/goodsDefaultList'
+            }
+          ]
         }
       ],
     }

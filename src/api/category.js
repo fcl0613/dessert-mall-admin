@@ -37,5 +37,11 @@ export default {
             url: `/category/get/${id}`,
             method: 'get'
         })
+    },
+    getAllDefaultCategroy() {
+        return api({
+            url: '/category/default/all',
+            method: 'get'
+        })
     }
 }

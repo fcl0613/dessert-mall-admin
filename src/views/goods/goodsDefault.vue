@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <my-breadcrumb p1="分类管理" p2="分类列表"></my-breadcrumb>
+    <my-breadcrumb p1="商品管理" p2="默认商品列表"></my-breadcrumb>
 
-    <div class="category-list-area">
+    <div class="goods-list-area">
       <el-card>
         <div class="search-area">
           <div class="left">
@@ -10,12 +10,12 @@
               placeholder="请搜索输入内容"
               v-model="keyword"
               clearable
-              @clear="getCategoryList"
+              @clear="getGoodsList"
             >
               <el-button
                 slot="append"
                 icon="el-icon-search"
-                @click="getCategoryList"
+                @click="getGoodsList"
               ></el-button>
             </el-input>
           </div>
@@ -24,26 +24,29 @@
           </div>
         </div>
         <div class="data-table">
-          <el-table :data="categoryList" border stripe style="width: 100%">
+          <el-table :data="goodsList" border stripe style="width: 100%">
             <el-table-column label="编号" type="index" width="200">
             </el-table-column>
-            <el-table-column prop="categoryName" label="分类名" width="300">
+            <el-table-column prop="goodsName" label="商品名" width="300">
             </el-table-column>
-            <el-table-column prop="categoryIcon" label="分类图标" width="300">
+            <el-table-column prop="goodsPic" label="商品图片" width="300">
               <template slot-scope="scope">
-                <div>
-                  <img
-                    :src="catrgoryBaseUrl + scope.row.categoryIcon"
-                    alt=""
-                    style="width: 80px; height: 80px"
-                  />
-                </div>
+                <img
+                  :src="goodsPicBaseUrl + scope.row.goodsPic"
+                  alt=""
+                  style="width: 80px; height: 80px"
+                />
               </template>
             </el-table-column>
-            <el-table-column prop="flag" label="是否为默认分类" width="300">
+            <el-table-column prop="goodsStatus" label="商品图片" width="300">
               <template slot-scope="scope">
-                <div v-if="scope.row.flag === 0">是</div>
-                <div v-if="scope.row.flag !== 0">否</div>
+                <el-switch
+                  v-model="scope.row.goodsStatus"
+                  :active-value="1"
+                  :inactive-value="0"
+                  @change="changStatus(scope.row)"
+                >
+                </el-switch>
               </template>
             </el-table-column>
             <el-table-column label="操作">
@@ -78,25 +81,44 @@
     </div>
 
     <el-dialog
-      :title="title"
+      :title="dialogTitle"
       :visible.sync="dialogVisible"
       width="30%"
       @close="initForm"
     >
       <el-form
-        :model="dataFrom"
+        :model="dataForm"
         :rules="rules"
         ref="ruleForm"
         label-width="100px"
+        class="demo-ruleForm"
       >
-        <el-form-item label="分类名称" prop="categoryName">
-          <el-input v-model="dataFrom.categoryName"></el-input>
+        <el-form-item label="商品名称" prop="goodsName">
+          <el-input v-model="dataForm.goodsName"></el-input>
         </el-form-item>
-        <el-form-item prop="categoryIcon">
-          <el-input
-            style="display: none"
-            v-model="dataFrom.categoryIcon"
-          ></el-input>
+        <el-form-item label="分类名称" prop="categoryId">
+          <el-select v-model="dataForm.categoryId" placeholder="请选择">
+            <el-option
+              v-for="item in categoryList"
+              :key="item.value"
+              :label="item.categoryName"
+              :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="商品描述" prop="description">
+          <el-input v-model="dataForm.description"></el-input>
+        </el-form-item>
+        <el-form-item label="商品状态" prop="description">
+          <el-switch
+            v-model="dataForm.goodsStatus"
+            :active-value="1"
+            :inactive-value="0"
+          >
+          </el-switch>
+        </el-form-item>
+        <el-form-item prop="goodsPic">
           <el-upload
             ref="upload"
             action=""
@@ -114,9 +136,9 @@
 
         <img
           v-if="imageUrl"
-          :src="catrgoryBaseUrl + dataFrom.categoryIcon"
+          :src="goodsPicBaseUrl + dataForm.goodsPic"
           alt=""
-          style="width: 60px; height: 60px"
+          style="width: 60px; height: 60px; margin-left:80px;"
         />
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -129,8 +151,9 @@
 
 <script>
 import MyBreadcrumb from '@/components/MyBreadcrumb'
+import goodsDefaultApi from '@/api/defaultGoods'
+import global from '@/utils/global'
 import categoryApi from '@/api/category'
-import globalConstant from '@/utils/global'
 import fileUploadApi from '@/api/fileUpload'
 export default {
   components: {
@@ -138,104 +161,114 @@ export default {
   },
   data() {
     return {
-      keyword: '',
       pageNum: 1,
       pageSize: 10,
-      categoryList: [],
+      keyword: '',
+      dialogTitle: '添加',
+      goodsList: [],
       total: 0,
-      catrgoryBaseUrl: globalConstant.BASE_CATEGORY_ICON_UMG_URL,
       dialogVisible: false,
-      dataFrom: {},
+      dataForm: {
+        goodsStatus: 0,
+      },
       rules: {
-        categoryName: [
-          { required: true, message: '请输入分类名称', trigger: 'blur' },
+        goodsName: [
+          { required: true, message: '请输入商品名称', trigger: 'blur' },
         ],
-        categoryIcon: [
-          { required: true, message: '请上传图片', trigger: 'blur' },
+        categoryId: [
+          { required: true, message: '请选择商品分类', trigger: 'blur' },
+        ],
+        description: [
+          { required: true, message: '请输入商品描述', trigger: 'blur' },
         ],
       },
-      fileList: [],
-      title: '添加',
-      fileUploadUrl: globalConstant.BASE_FILE_UPLOAD_URL,
       imageUrl: '',
+      goodsPicBaseUrl: global.BASE_GOOD_IMG_URL,
+      fileList: [],
+      categoryList: [],
     }
   },
   created() {
-    this.getCategoryList()
+    this.getGoodsList()
+    this.getAllDefaultCategory()
   },
   methods: {
-    getCategoryList() {
-      categoryApi
-        .getCategoryList(this.pageNum, this.pageSize, this.keyword)
+    getGoodsList() {
+      goodsDefaultApi
+        .getGoodsList(this.pageNum, this.pageSize, this.keyword)
         .then((res) => {
-          this.categoryList = res.data.list
+          this.goodsList = res.data.list
           this.total = res.data.total
         })
     },
-    getCategoryDetail(id) {
-      categoryApi.getCategoryDetail(id).then((res) => {
-        this.dataFrom = res.data
-        this.imageUrl = res.data.categoryIcon
-      })
-    },
-    addCategory() {
-      if (!this.dataFrom.categoryIcon) {
-        this.$message.error('请先上传图片')
-        return
-      }
-      categoryApi.addCategory(this.dataFrom).then((res) => {
-        this.$message.success('添加成功')
-        this.dialogVisible = !this.dialogVisible
-        this.getCategoryList()
-      })
-    },
-    updateCategory() {
-      categoryApi.updateCategory(this.dataFrom).then((res) => {
-        this.$message.success('更新成功')
-        this.dialogVisible = !this.dialogVisible
-        this.getCategoryList()
-      })
-    },
     showAddDialog() {
-      this.title = '添加'
+      this.dialogTitle = '添加'
       this.dialogVisible = !this.dialogVisible
     },
     showEditDialog(id) {
-      this.title = '修改'
+      goodsDefaultApi.getGoodsDetail(id).then((res) => {
+        this.dataForm = res.data
+        this.imageUrl = this.dataForm.goodsPic
+      })
+      this.dialogTitle = '修改'
       this.dialogVisible = !this.dialogVisible
-      this.getCategoryDetail(id)
     },
     removeCategoryOne(id) {
-      this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
+      this.$confirm('此操作将永久删除该商品, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
       }).then(() => {
-        categoryApi.removeCategory(id).then((res) => {
+        goodsDefaultApi.removeGoods(id).then((res) => {
           this.$message.success('删除成功')
-          this.getCategoryList()
+          this.getGoodsList()
         })
       })
     },
     handleSizeChange(val) {
       this.pageSize = val
-      this.getCategoryList()
+      this.getGoodsList()
     },
     handleCurrentChange(val) {
       this.pageNum = val
-      this.getCategoryList()
+      this.getGoodsList()
+    },
+    subForm() {
+      this.$refs.ruleForm.validate((valid) => {
+        if (!valid) return
+        if (this.dataForm.id) {
+          // 对象中存在id走用户更新逻辑
+          this.updateGoods()
+        } else {
+          // 走用户添加逻辑
+          this.addGoods()
+        }
+      })
+    },
+    addGoods() {
+      goodsDefaultApi.addGoods(this.dataForm).then((res) => {
+        this.$message.success('添加成功')
+        this.dialogVisible = !this.dialogVisible
+        this.getGoodsList()
+      })
+    },
+    updateGoods() {
+      goodsDefaultApi.updateGoods(this.dataForm).then((res) => {
+        this.$message.success('更新成功')
+        this.dialogVisible = !this.dialogVisible
+        this.getGoodsList()
+      })
     },
     fileUpload(options) {
-      // console.log('222')
       let file = options.file
       let formData = new FormData()
       formData.append('file', file)
-      formData.append('flag', 'category')
+      formData.append('flag', 'goods')
       fileUploadApi.fileUpload(formData).then((response) => {
         let res = response.data
         if (res.code == 200) {
           this.imageUrl = res.data
-          this.dataFrom.categoryIcon = this.imageUrl
+          this.dataForm.goodsPic = this.imageUrl
           console.log(this.imageUrl)
           this.$message.success('文件上传成功')
         } else {
@@ -243,16 +276,24 @@ export default {
         }
       })
     },
-    subForm() {
-      if (this.dataFrom.id) {
-        this.updateCategory()
-      } else {
-        this.addCategory()
-      }
+    getAllDefaultCategory() {
+      categoryApi.getAllDefaultCategroy().then((res) => {
+        this.categoryList = res.data
+      })
+    },
+    changStatus(goods) {
+      let obj = new Object()
+      obj.id = goods.id
+      obj.status = goods.goodsStatus
+      goodsDefaultApi.changeStatus(obj).then((res) => {
+        this.$message.success('修改成功')
+      })
     },
     initForm() {
       this.$refs.ruleForm.resetFields()
-      this.dataForm = {}
+      this.dataForm = {
+        goodsStatus: 0,
+      }
       this.imageUrl = ''
       this.fileList = []
     },
@@ -262,7 +303,7 @@ export default {
 
 <style lang="less" scoped>
 .container {
-  .category-list-area {
+  .goods-list-area {
     .search-area {
       display: flex;
       justify-content: space-between;

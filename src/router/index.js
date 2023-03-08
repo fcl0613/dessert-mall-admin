@@ -8,6 +8,7 @@ import user from '@/views/user'
 import store from '@/views/store'
 import owner from '@/views/owner'
 import category from '@/views/category'
+import goodsDefault from '@/views/goods/goodsDefault'
 
 
 Vue.use(VueRouter)
@@ -46,6 +47,10 @@ const router = new VueRouter({
         {
           path: '/categoryList',
           component: category
+        },
+        {
+          path: '/goodsDefaultList',
+          component: goodsDefault
         }
       ]
     }

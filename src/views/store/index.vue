@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <my-breadcrumb p1="门店管理" p2="门店列表"></my-breadcrumb>
     <div class="header">
       <div class="left">
         <div class="input-area">
@@ -120,8 +121,12 @@
 </template>
 
 <script>
+import MyBreadcrumb from '@/components/MyBreadcrumb'
 import storeApi from '@/api/store'
 export default {
+  components: {
+    MyBreadcrumb,
+  },
   data() {
     const checkLongitude = (rule, value, cb) => {
       const phoneReg =
