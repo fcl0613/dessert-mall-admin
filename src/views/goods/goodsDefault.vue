@@ -29,6 +29,8 @@
             </el-table-column>
             <el-table-column prop="goodsName" label="商品名" width="300">
             </el-table-column>
+            <el-table-column prop="goodsPoints" label="商品积分" width="180">
+            </el-table-column>
             <el-table-column prop="goodsPic" label="商品图片" width="300">
               <template slot-scope="scope">
                 <img
@@ -38,7 +40,7 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="goodsStatus" label="商品图片" width="300">
+            <el-table-column prop="goodsStatus" label="商品状态" width="300">
               <template slot-scope="scope">
                 <el-switch
                   v-model="scope.row.goodsStatus"
@@ -109,6 +111,12 @@
         </el-form-item>
         <el-form-item label="商品描述" prop="description">
           <el-input v-model="dataForm.description"></el-input>
+        </el-form-item>
+        <el-form-item label="商品价格" prop="goodsPrice">
+          <el-input v-model.number="dataForm.goodsPrice"></el-input>
+        </el-form-item>
+        <el-form-item label="商品积分" prop="goodsPoints">
+          <el-input v-model.number="dataForm.goodsPoints"></el-input>
         </el-form-item>
         <el-form-item label="商品状态" prop="description">
           <el-switch
@@ -181,6 +189,14 @@ export default {
         description: [
           { required: true, message: '请输入商品描述', trigger: 'blur' },
         ],
+        goodsPrice: [
+          { required: true, message: '价格不能为空', trigger: 'blur'},
+          { type: 'number', message: '价格必须为数字值', trigger: 'blur'}
+        ],
+        goodsPoints: [
+          { required: true, message: '积分不能为空', trigger: 'blur'},
+          { type: 'number', message: '积分必须为数字值', trigger: 'blur'}
+        ]
       },
       imageUrl: '',
       goodsPicBaseUrl: global.BASE_GOOD_IMG_URL,
@@ -246,6 +262,10 @@ export default {
       })
     },
     addGoods() {
+      if(!this.dataForm.goodsPic) {
+        this.$message.error('请先上传图片')
+        return
+      }
       goodsDefaultApi.addGoods(this.dataForm).then((res) => {
         this.$message.success('添加成功')
         this.dialogVisible = !this.dialogVisible
