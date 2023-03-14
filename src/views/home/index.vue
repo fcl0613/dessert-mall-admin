@@ -4,7 +4,7 @@
       <el-header>
         <div class="header">
           <div class="logo">
-            <h1>ALMALL</h1>
+            <h1 style="cursor: pointer;" @click="toDashboardPage">ALMALL</h1>
           </div>
           <div class="right">
             <el-dropdown>
@@ -13,9 +13,9 @@
                 <i class="el-icon-arrow-down el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>首页</el-dropdown-item>
-                <el-dropdown-item>个人信息</el-dropdown-item>
-                <el-dropdown-item>退出</el-dropdown-item>
+                <el-dropdown-item @click.native="toDashboardPage">首页</el-dropdown-item>
+                <!-- <el-dropdown-item>个人信息</el-dropdown-item> -->
+                <el-dropdown-item @click.native="logout">退出</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
@@ -62,6 +62,7 @@
 
 <script>
 import globalContant from '@/utils/global'
+import {removeToken} from '@/utils/token'
 export default {
   data() {
     return {
@@ -133,6 +134,19 @@ export default {
               path: '/goodsDefaultList'
             }
           ]
+        },
+        {
+          id: '6',
+          menuName: '订单管理',
+          icon: 'el-icon-tickets',
+          children: [
+            {
+              id: '6-1',
+              menuName: '订单列表',
+              icon: 'el-icon-document',
+              path: '/orderList'
+            }
+          ]
         }
       ],
     }
@@ -142,6 +156,14 @@ export default {
       console.log(path)
       this.activeMenuItem = path
     },
+    toDashboardPage() {
+      this.$router.push('/dashbord')
+    },
+    logout() {
+      console.log('sssss')
+      removeToken()
+      this.$router.push('/login')
+    }
   },
 }
 </script>
