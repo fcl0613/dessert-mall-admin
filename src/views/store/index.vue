@@ -84,7 +84,7 @@
         ref="formRef"
         label-width="100px"
       >
-        <el-form-item label="用户名称" prop="storeName">
+        <el-form-item label="门店名称" prop="storeName">
           <el-input v-model="storeObj.storeName"></el-input>
         </el-form-item>
         <el-form-item label="门店地址" prop="storeAddress">
