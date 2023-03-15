@@ -67,7 +67,7 @@ export default {
   data() {
     return {
       base_url: globalContant.BASE_IMG_URL,
-      avatar: 'salt_fish.gif',
+      avatar: 'moren.jpg',
       activeMenuItem: '',
       menuList: [
         {
